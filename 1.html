@@ -2,153 +2,310 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram WebApp Features</title>
+    <title>Фильтр недвижимости</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --animation-duration: 0.3s;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all var(--animation-duration) ease;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            padding: 16px;
-            margin: 0;
-            transition: all 0.3s;
-        }
-        .section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-        }
-        .button {
-            padding: 10px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 8px;
-            background: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, white);
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .info-text {
-            margin: 10px 0;
+            background: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #000);
+            padding-bottom: 60px;
         }
-        #user-info {
-            white-space: pre-wrap;
+        
+        .header {
+            padding: 16px;
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color, #3390ec);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--tg-theme-button-text-color, #fff);
+            font-weight: bold;
+        }
+        
+        .filter-section {
+            padding: 16px;
+            margin: 8px 16px;
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+        
+        .filter-content {
+            max-height: 0;
+            opacity: 0;
+            transition: all var(--animation-duration) ease;
+        }
+        
+        .filter-content.expanded {
+            max-height: 500px;
+            opacity: 1;
+        }
+        
+        .range-inputs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        input[type="number"], input[type="text"] {
+            background: var(--tg-theme-bg-color, #fff);
+            border: 1px solid var(--tg-theme-hint-color, #999);
+            padding: 8px;
+            border-radius: 8px;
+            color: var(--tg-theme-text-color, #000);
+            width: 100%;
+        }
+        
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .tag {
+            background: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #fff);
+            padding: 6px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .tag.selected {
+            background: var(--tg-theme-text-color, #000);
+        }
+        
+        .notifications {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--tg-theme-hint-color, #999);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--tg-theme-button-color, #3390ec);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
 <body>
-    <div class="section">
-        <h3>Вибрация</h3>
-        <button class="button" onclick="vibrateLight()">Легкая вибрация</button>
-        <button class="button" onclick="vibrateMedium()">Средняя вибрация</button>
-        <button class="button" onclick="vibrateHeavy()">Сильная вибрация</button>
-        <button class="button" onclick="vibrateSuccess()">Успех</button>
-        <button class="button" onclick="vibrateError()">Ошибка</button>
-        <button class="button" onclick="vibrateWarning()">Предупреждение</button>
+    <div class="header">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div id="userName">Пользователь</div>
     </div>
 
-    <div class="section">
-        <h3>MainButton</h3>
-        <button class="button" onclick="showMainButton()">Показать кнопку</button>
-        <button class="button" onclick="hideMainButton()">Скрыть кнопку</button>
-        <button class="button" onclick="toggleMainButton()">Вкл/Выкл прогресс</button>
+    <div class="filter-section">
+        <div class="filter-header" onclick="toggleSection('price')">
+            <span>Цена</span>
+            <span>▼</span>
+        </div>
+        <div class="filter-content" id="price">
+            <div class="range-inputs">
+                <input type="number" placeholder="От" onchange="vibrateMedium()">
+                <input type="number" placeholder="До" onchange="vibrateMedium()">
+            </div>
+        </div>
     </div>
 
-    <div class="section">
-        <h3>BackButton</h3>
-        <button class="button" onclick="toggleBackButton()">Показать/скрыть Back</button>
+    <div class="filter-section">
+        <div class="filter-header" onclick="toggleSection('location')">
+            <span>Расположение</span>
+            <span>▼</span>
+        </div>
+        <div class="filter-content" id="location">
+            <input type="text" placeholder="Введите район или улицу" onchange="vibrateMedium()">
+            <div class="tag-container">
+                <div class="tag" onclick="toggleTag(this)">Центр</div>
+                <div class="tag" onclick="toggleTag(this)">Север</div>
+                <div class="tag" onclick="toggleTag(this)">Юг</div>
+                <div class="tag" onclick="toggleTag(this)">Запад</div>
+                <div class="tag" onclick="toggleTag(this)">Восток</div>
+            </div>
+        </div>
     </div>
 
-    <div class="section">
-        <h3>Информация</h3>
-        <div id="user-info" class="info-text"></div>
+    <div class="filter-section">
+        <div class="filter-header" onclick="toggleSection('parameters')">
+            <span>Параметры жилья</span>
+            <span>▼</span>
+        </div>
+        <div class="filter-content" id="parameters">
+            <div class="range-inputs">
+                <input type="number" placeholder="Комнат от" onchange="vibrateMedium()">
+                <input type="number" placeholder="Комнат до" onchange="vibrateMedium()">
+            </div>
+            <div class="tag-container">
+                <div class="tag" onclick="toggleTag(this)">Парковка</div>
+                <div class="tag" onclick="toggleTag(this)">Балкон</div>
+                <div class="tag" onclick="toggleTag(this)">Ремонт</div>
+                <div class="tag" onclick="toggleTag(this)">Мебель</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <div class="notifications">
+            <label class="toggle-switch">
+                <input type="checkbox" onchange="toggleNotifications(this)">
+                <span class="slider"></span>
+            </label>
+            <span>Получать уведомления о новых предложениях</span>
+        </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
         
+        // Инициализация пользователя
+        if (tg.initDataUnsafe?.user) {
+            document.getElementById('userName').textContent = tg.initDataUnsafe.user.first_name;
+            document.getElementById('userAvatar').textContent = tg.initDataUnsafe.user.first_name[0];
+        }
+
+        // Настройка главной кнопки
+        tg.MainButton.setText('ПОКАЗАТЬ РЕЗУЛЬТАТЫ');
+        tg.MainButton.onClick(() => {
+            vibrateSuccess();
+            tg.close();
+        });
+        tg.MainButton.show();
+
         // Вибрация
-        function vibrateLight() {
-            tg.HapticFeedback.impactOccurred('light');
+        function vibrateSuccess() {
+            tg.HapticFeedback.notificationOccurred('success');
         }
         
         function vibrateMedium() {
             tg.HapticFeedback.impactOccurred('medium');
         }
         
-        function vibrateHeavy() {
-            tg.HapticFeedback.impactOccurred('heavy');
-        }
-        
-        function vibrateSuccess() {
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-        
-        function vibrateError() {
-            tg.HapticFeedback.notificationOccurred('error');
-        }
-        
-        function vibrateWarning() {
-            tg.HapticFeedback.notificationOccurred('warning');
+        function vibrateLight() {
+            tg.HapticFeedback.impactOccurred('light');
         }
 
-        // MainButton
-        function showMainButton() {
-            tg.MainButton.setText('ГЛАВНАЯ КНОПКА');
-            tg.MainButton.show();
-        }
-
-        function hideMainButton() {
-            tg.MainButton.hide();
-        }
-
-        function toggleMainButton() {
-            if (tg.MainButton.isProgressVisible) {
-                tg.MainButton.hideProgress();
-            } else {
-                tg.MainButton.showProgress();
+        // Управление секциями
+        let currentSection = null;
+        
+        function toggleSection(sectionId) {
+            vibrateLight();
+            const content = document.getElementById(sectionId);
+            const isExpanding = !content.classList.contains('expanded');
+            
+            if (currentSection && currentSection !== content) {
+                currentSection.classList.remove('expanded');
             }
-        }
-
-        // BackButton
-        function toggleBackButton() {
-            if (tg.BackButton.isVisible) {
-                tg.BackButton.hide();
-            } else {
+            
+            content.classList.toggle('expanded');
+            
+            if (isExpanding) {
+                currentSection = content;
                 tg.BackButton.show();
+            } else {
+                currentSection = null;
+                tg.BackButton.hide();
             }
         }
 
-        // Информация о пользователе и приложении
-        const userInfo = `
-Информация о пользователе:
-ID: ${tg.initDataUnsafe?.user?.id || 'Н/Д'}
-Имя: ${tg.initDataUnsafe?.user?.first_name || 'Н/Д'}
-Тема: ${tg.colorScheme}
-Версия: ${tg.version}
-Платформа: ${tg.platform}
-`;
-        document.getElementById('user-info').textContent = userInfo;
-
-        // События
-        tg.onEvent('viewportChanged', () => {
-            console.log('Viewport changed');
-        });
-
-        tg.onEvent('themeChanged', () => {
-            console.log('Theme changed');
-        });
-
-        // MainButton событие
-        tg.MainButton.onClick(() => {
-            tg.showAlert('Кнопка нажата!');
-        });
-
-        // BackButton событие
+        // Обработка кнопки назад
         tg.BackButton.onClick(() => {
-            tg.showAlert('Назад');
+            if (currentSection) {
+                currentSection.classList.remove('expanded');
+                currentSection = null;
+                tg.BackButton.hide();
+                vibrateLight();
+            }
         });
+
+        // Управление тегами
+        function toggleTag(tag) {
+            vibrateLight();
+            tag.classList.toggle('selected');
+        }
+
+        // Уведомления
+        function toggleNotifications(checkbox) {
+            if (checkbox.checked) {
+                vibrateSuccess();
+                tg.showPopup({
+                    title: 'Уведомления включены',
+                    message: 'Вы будете получать уведомления о новых предложениях',
+                    buttons: [{text: 'OK'}]
+                });
+            } else {
+                vibrateLight();
+            }
+        }
     </script>
 </body>
 </html>
