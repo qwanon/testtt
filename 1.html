@@ -383,167 +383,213 @@
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        // Инициализация пользователя
-        if (tg.initDataUnsafe?.user) {
-            document.getElementById('userName').textContent = tg.initDataUnsafe.user.first_name;
-            document.getElementById('userAvatar').textContent = tg.initDataUnsafe.user.first_name[0];
-        }
+tg.expand();
 
-        // Управление главной кнопкой
+// Состояние фильтров
+const filters = {
+    districts: [],
+    rooms: [],
+    price: { min: null, max: null },
+    furniture: []
+};
+
+// Инициализация пользователя
+if (tg.initDataUnsafe?.user) {
+    document.getElementById('userName').textContent = tg.initDataUnsafe.user.first_name;
+    document.getElementById('userAvatar').textContent = tg.initDataUnsafe.user.first_name[0];
+}
+
+// Управление главной кнопкой
+tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
+tg.MainButton.onClick(() => {
+    tg.sendData(JSON.stringify({
+        action: 'applyFilters',
+        filters: filters
+    }));
+    vibrateSuccess();
+});
+tg.MainButton.show();
+
+// Вибрация
+function vibrateSuccess() {
+    tg.HapticFeedback.notificationOccurred('success');
+}
+
+function vibrateMedium() {
+    tg.HapticFeedback.impactOccurred('medium');
+}
+
+function vibrateLight() {
+    tg.HapticFeedback.impactOccurred('light');
+}
+
+// Управление оверлеями
+let currentOverlay = null;
+
+function showOverlay(overlayId) {
+    if (currentOverlay) {
+        currentOverlay.classList.remove('active');
+    }
+    currentOverlay = document.getElementById(overlayId);
+    currentOverlay.classList.add('active');
+    tg.BackButton.show();
+    vibrateMedium();
+}
+
+function hideOverlay() {
+    if (currentOverlay) {
+        currentOverlay.classList.remove('active');
+        currentOverlay = null;
+        tg.BackButton.hide();
+        vibrateLight();
+        updateFilterDisplay();
+    }
+}
+
+// Обновление отображения выбранных фильтров
+function updateFilterDisplay() {
+    // Районы
+    const districtButton = document.querySelector('.filter-button:nth-child(1) span:last-child');
+    districtButton.textContent = filters.districts.length > 0 
+        ? `Обрано: ${filters.districts.length}` 
+        : 'Не обрано ▸';
+
+    // Комнаты
+    const roomButton = document.querySelector('.filter-button:nth-child(2) span:last-child');
+    roomButton.textContent = filters.rooms.length > 0 
+        ? `Обрано: ${filters.rooms.length}` 
+        : 'Не обрано ▸';
+
+    // Цена
+    const priceButton = document.querySelector('.filter-button:nth-child(3) span:last-child');
+    if (filters.price.min || filters.price.max) {
+        let priceText = '';
+        if (filters.price.min) priceText += `від ${filters.price.min}`;
+        if (filters.price.min && filters.price.max) priceText += ' ';
+        if (filters.price.max) priceText += `до ${filters.price.max}`;
+        priceButton.textContent = priceText;
+    } else {
+        priceButton.textContent = 'Не обрано ▸';
+    }
+
+    // Мебель
+    const furnitureButton = document.querySelector('.filter-button:nth-child(4) span:last-child');
+    furnitureButton.textContent = filters.furniture.length > 0 
+        ? `Обрано: ${filters.furniture.length}` 
+        : 'Не обрано ▸';
+}
+
+// Обработчики показа секций
+function showProfile() { showOverlay('profileOverlay'); }
+function showDistrictSelector() { showOverlay('districtOverlay'); }
+function showRoomSelector() { showOverlay('roomOverlay'); }
+function showPriceSelector() { showOverlay('priceOverlay'); }
+function showFurnitureSelector() { showOverlay('furnitureOverlay'); }
+
+function showFavorites() {
+    tg.sendData(JSON.stringify({
+        action: 'showFavorites'
+    }));
+    hideOverlay();
+    tg.close();
+}
+
+function showNotificationSettings() {
+    tg.sendData(JSON.stringify({
+        action: 'showNotifications'
+    }));
+    hideOverlay();
+    tg.close();
+}
+
+// Обработка кнопки назад
+tg.BackButton.onClick(() => {
+    hideOverlay();
+});
+
+// Обработчики выбора элементов
+function toggleDistrict(element) {
+    const checkbox = element.querySelector('.checkbox');
+    const district = element.querySelector('span').textContent;
+    checkbox.classList.toggle('checked');
+    
+    if (checkbox.classList.contains('checked')) {
+        filters.districts.push(district);
+    } else {
+        filters.districts = filters.districts.filter(d => d !== district);
+    }
+    
+    vibrateLight();
+    updateMainButton();
+}
+
+function toggleRoom(button) {
+    button.classList.toggle('selected');
+    const room = button.textContent;
+    
+    if (button.classList.contains('selected')) {
+        filters.rooms.push(room);
+    } else {
+        filters.rooms = filters.rooms.filter(r => r !== room);
+    }
+    
+    vibrateLight();
+    updateMainButton();
+}
+
+function handlePriceChange() {
+    const inputs = document.querySelectorAll('#priceOverlay .price-input');
+    filters.price.min = inputs[0].value || null;
+    filters.price.max = inputs[1].value || null;
+    
+    vibrateMedium();
+    updateMainButton();
+}
+
+function toggleFurniture(element) {
+    const checkbox = element.querySelector('.checkbox');
+    const furniture = element.querySelector('span').textContent;
+    checkbox.classList.toggle('checked');
+    
+    if (checkbox.classList.contains('checked')) {
+        filters.furniture.push(furniture);
+    } else {
+        filters.furniture = filters.furniture.filter(f => f !== furniture);
+    }
+    
+    vibrateLight();
+    updateMainButton();
+}
+
+// Обновление главной кнопки
+function updateMainButton() {
+    const hasFilters = 
+        filters.districts.length > 0 ||
+        filters.rooms.length > 0 ||
+        filters.price.min !== null ||
+        filters.price.max !== null ||
+        filters.furniture.length > 0;
+
+    if (hasFilters) {
         tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
-        tg.MainButton.onClick(() => {
-            // Здесь можно отправить данные боту
-            tg.sendData(JSON.stringify({
-                districts: getSelectedDistricts(),
-                rooms: getSelectedRooms(),
-                price: getPriceRange(),
-                furniture: getSelectedFurniture()
-            }));
-            vibrateSuccess();
-        });
         tg.MainButton.show();
+    } else {
+        tg.MainButton.setText('ОБЕРІТЬ ФІЛЬТРИ');
+        tg.MainButton.show();
+    }
+}
 
-        // Вибрация
-        function vibrateSuccess() {
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-        
-        function vibrateMedium() {
-            tg.HapticFeedback.impactOccurred('medium');
-        }
-        
-        function vibrateLight() {
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        // Управление оверлеями
-        let currentOverlay = null;
-
-        function showOverlay(overlayId) {
-            if (currentOverlay) {
-                currentOverlay.classList.remove('active');
-            }
-            currentOverlay = document.getElementById(overlayId);
-            currentOverlay.classList.add('active');
-            tg.BackButton.show();
-            vibrateMedium();
-        }
-
-        function hideOverlay() {
-            if (currentOverlay) {
-                currentOverlay.classList.remove('active');
-                currentOverlay = null;
-                tg.BackButton.hide();
-                vibrateLight();
-            }
-        }
-
-        function showProfile() { showOverlay('profileOverlay'); }
-            function showDistrictSelector() { showOverlay('districtOverlay'); }
-            function showRoomSelector() { showOverlay('roomOverlay'); }
-            function showPriceSelector() { showOverlay('priceOverlay'); }
-            function showFurnitureSelector() { showOverlay('furnitureOverlay'); }
-            function showFavorites() { 
-                hideOverlay();
-                // В будущем здесь будет открываться страница с избранным
-                tg.showPopup({
-                    title: 'Обрані оголошення',
-                    message: 'Ця функція поки недоступна',
-                    buttons: [{text: 'OK'}]
-                });
-            }
-            function showNotificationSettings() {
-                hideOverlay();
-                // В будущем здесь будут настройки уведомлений
-                tg.showPopup({
-                    title: 'Налаштування сповіщень',
-                    message: 'Ця функція поки недоступна',
-                    buttons: [{text: 'OK'}]
-                });
-            }
-
-            // Обработка кнопки назад
-            tg.BackButton.onClick(() => {
-                hideOverlay();
-            });
-
-            // Обработчики выбора элементов
-            function toggleDistrict(element) {
-                const checkbox = element.querySelector('.checkbox');
-                checkbox.classList.toggle('checked');
-                vibrateLight();
-                updateMainButton();
-            }
-
-            function toggleRoom(button) {
-                button.classList.toggle('selected');
-                vibrateLight();
-                updateMainButton();
-            }
-
-            function handlePriceChange() {
-                vibrateMedium();
-                updateMainButton();
-            }
-
-            function toggleFurniture(element) {
-                const checkbox = element.querySelector('.checkbox');
-                checkbox.classList.toggle('checked');
-                vibrateLight();
-                updateMainButton();
-            }
-
-            // Получение выбранных значений
-            function getSelectedDistricts() {
-                const districts = [];
-                document.querySelectorAll('#districtOverlay .checkbox.checked').forEach(checkbox => {
-                    districts.push(checkbox.nextElementSibling.textContent);
-                });
-                return districts;
-            }
-
-            function getSelectedRooms() {
-                const rooms = [];
-                document.querySelectorAll('#roomOverlay .room-button.selected').forEach(button => {
-                    rooms.push(button.textContent);
-                });
-                return rooms;
-            }
-
-            function getPriceRange() {
-                const inputs = document.querySelectorAll('#priceOverlay .price-input');
-                return {
-                    min: inputs[0].value || null,
-                    max: inputs[1].value || null
-                };
-            }
-
-            function getSelectedFurniture() {
-                const furniture = [];
-                document.querySelectorAll('#furnitureOverlay .checkbox.checked').forEach(checkbox => {
-                    furniture.push(checkbox.nextElementSibling.textContent);
-                });
-                return furniture;
-            }
-
-            // Обновление главной кнопки
-            function updateMainButton() {
-                const hasFilters = 
-                    getSelectedDistricts().length > 0 ||
-                    getSelectedRooms().length > 0 ||
-                    getPriceRange().min !== null ||
-                    getPriceRange().max !== null ||
-                    getSelectedFurniture().length > 0;
-
-                if (hasFilters) {
-                    tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
-                    tg.MainButton.show();
-                } else {
-                    tg.MainButton.setText('ОБЕРІТЬ ФІЛЬТРИ');
-                }
-            }
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    // Установка максимальной ширины для инпутов цены
+    const priceInputs = document.querySelectorAll('.price-input');
+    priceInputs.forEach(input => {
+        input.style.maxWidth = '150px';
+    });
+    
+    updateFilterDisplay();
+    updateMainButton();
+});
         </script>
     </body>
 </html>
