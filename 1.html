@@ -2,57 +2,153 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram WebApp Demo</title>
+    <title>Telegram WebApp Features</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 16px;
             margin: 0;
+            transition: all 0.3s;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
         }
         .button {
             padding: 10px 20px;
             margin: 5px;
             border: none;
             border-radius: 8px;
-            background: #3390ec;
-            color: white;
+            background: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, white);
             cursor: pointer;
+            font-size: 14px;
         }
-        #theme-info {
+        .info-text {
             margin: 10px 0;
+            color: var(--tg-theme-text-color, #000);
+        }
+        #user-info {
+            white-space: pre-wrap;
         }
     </style>
 </head>
 <body>
-    <div id="theme-info"></div>
-    <button class="button" onclick="vibrate()">Вибрация 200мс</button>
-    <button class="button" onclick="vibratePattern()">Вибрация (паттерн)</button>
+    <div class="section">
+        <h3>Вибрация</h3>
+        <button class="button" onclick="vibrateLight()">Легкая вибрация</button>
+        <button class="button" onclick="vibrateMedium()">Средняя вибрация</button>
+        <button class="button" onclick="vibrateHeavy()">Сильная вибрация</button>
+        <button class="button" onclick="vibrateSuccess()">Успех</button>
+        <button class="button" onclick="vibrateError()">Ошибка</button>
+        <button class="button" onclick="vibrateWarning()">Предупреждение</button>
+    </div>
+
+    <div class="section">
+        <h3>MainButton</h3>
+        <button class="button" onclick="showMainButton()">Показать кнопку</button>
+        <button class="button" onclick="hideMainButton()">Скрыть кнопку</button>
+        <button class="button" onclick="toggleMainButton()">Вкл/Выкл прогресс</button>
+    </div>
+
+    <div class="section">
+        <h3>BackButton</h3>
+        <button class="button" onclick="toggleBackButton()">Показать/скрыть Back</button>
+    </div>
+
+    <div class="section">
+        <h3>Информация</h3>
+        <div id="user-info" class="info-text"></div>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
         
-        // Информация о теме
-        document.getElementById('theme-info').innerHTML = `
-            Текущая тема: ${tg.colorScheme}<br>
-            Цвет фона: ${tg.backgroundColor}<br>
-            Текстовый цвет: ${tg.headerColor}
-        `;
+        // Вибрация
+        function vibrateLight() {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+        
+        function vibrateMedium() {
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+        
+        function vibrateHeavy() {
+            tg.HapticFeedback.impactOccurred('heavy');
+        }
+        
+        function vibrateSuccess() {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+        
+        function vibrateError() {
+            tg.HapticFeedback.notificationOccurred('error');
+        }
+        
+        function vibrateWarning() {
+            tg.HapticFeedback.notificationOccurred('warning');
+        }
 
-        // Функция вибрации
-        function vibrate() {
-            if (tg.isVersionAtLeast('6.1')) {
-                tg.hapticFeedback.impactOccurred('medium');
+        // MainButton
+        function showMainButton() {
+            tg.MainButton.setText('ГЛАВНАЯ КНОПКА');
+            tg.MainButton.show();
+        }
+
+        function hideMainButton() {
+            tg.MainButton.hide();
+        }
+
+        function toggleMainButton() {
+            if (tg.MainButton.isProgressVisible) {
+                tg.MainButton.hideProgress();
+            } else {
+                tg.MainButton.showProgress();
             }
         }
 
-        // Функция вибрации с паттерном
-        function vibratePattern() {
-            if (tg.isVersionAtLeast('6.1')) {
-                tg.hapticFeedback.notificationOccurred('success');
+        // BackButton
+        function toggleBackButton() {
+            if (tg.BackButton.isVisible) {
+                tg.BackButton.hide();
+            } else {
+                tg.BackButton.show();
             }
         }
+
+        // Информация о пользователе и приложении
+        const userInfo = `
+Информация о пользователе:
+ID: ${tg.initDataUnsafe?.user?.id || 'Н/Д'}
+Имя: ${tg.initDataUnsafe?.user?.first_name || 'Н/Д'}
+Тема: ${tg.colorScheme}
+Версия: ${tg.version}
+Платформа: ${tg.platform}
+`;
+        document.getElementById('user-info').textContent = userInfo;
+
+        // События
+        tg.onEvent('viewportChanged', () => {
+            console.log('Viewport changed');
+        });
+
+        tg.onEvent('themeChanged', () => {
+            console.log('Theme changed');
+        });
+
+        // MainButton событие
+        tg.MainButton.onClick(() => {
+            tg.showAlert('Кнопка нажата!');
+        });
+
+        // BackButton событие
+        tg.BackButton.onClick(() => {
+            tg.showAlert('Назад');
+        });
     </script>
 </body>
 </html>
