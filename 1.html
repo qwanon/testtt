@@ -1,17 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Web App</title>
+    <title>Telegram WebApp Demo</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            background: #3390ec;
+            color: white;
+            cursor: pointer;
+        }
+        #theme-info {
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
-    <button onclick="triggerVibration()">Вибрация</button>
+    <div id="theme-info"></div>
+    <button class="button" onclick="vibrate()">Вибрация 200мс</button>
+    <button class="button" onclick="vibratePattern()">Вибрация (паттерн)</button>
 
     <script>
-        function triggerVibration() {
-            if (Telegram.WebApp) {
-                Telegram.WebApp.hapticFeedback();  // Включает вибрацию
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        // Информация о теме
+        document.getElementById('theme-info').innerHTML = `
+            Текущая тема: ${tg.colorScheme}<br>
+            Цвет фона: ${tg.backgroundColor}<br>
+            Текстовый цвет: ${tg.headerColor}
+        `;
+
+        // Функция вибрации
+        function vibrate() {
+            if (tg.isVersionAtLeast('6.1')) {
+                tg.hapticFeedback.impactOccurred('medium');
+            }
+        }
+
+        // Функция вибрации с паттерном
+        function vibratePattern() {
+            if (tg.isVersionAtLeast('6.1')) {
+                tg.hapticFeedback.notificationOccurred('success');
             }
         }
     </script>
