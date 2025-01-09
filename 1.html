@@ -11,14 +11,14 @@
             --tg-theme-button-text-color: #ffffff;
             --safe-area-top: env(safe-area-inset-top);
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--tg-theme-bg-color, #fff);
@@ -240,380 +240,405 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="profile-button" onclick="showProfile()">
-            <div class="user-avatar" id="userAvatar">U</div>
-            <div id="userName">Користувач</div>
-        </div>
+<div class="header">
+    <div class="profile-button" onclick="showProfile()">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div id="userName">Користувач</div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="filter-card">
+        <button class="filter-button" onclick="showDistrictSelector()">
+            <span>Район</span>
+            <span>Не обрано ▸</span>
+        </button>
     </div>
 
-    <div class="main-content">
-        <div class="filter-card">
-            <button class="filter-button" onclick="showDistrictSelector()">
-                <span>Район</span>
-                <span>Не обрано ▸</span>
-            </button>
-        </div>
-
-        <div class="filter-card">
-            <button class="filter-button" onclick="showRoomSelector()">
-                <span>Кімнати</span>
-                <span>Не обрано ▸</span>
-            </button>
-        </div>
-
-        <div class="filter-card">
-            <button class="filter-button" onclick="showPriceSelector()">
-                <span>Ціна</span>
-                <span>Не обрано ▸</span>
-            </button>
-        </div>
-
-        <div class="filter-card">
-            <button class="filter-button" onclick="showFurnitureSelector()">
-                <span>Меблі/техніка</span>
-                <span>Не обрано ▸</span>
-            </button>
-        </div>
+    <div class="filter-card">
+        <button class="filter-button" onclick="showRoomSelector()">
+            <span>Кімнати</span>
+            <span>Не обрано ▸</span>
+        </button>
     </div>
 
-    <!-- Overlays -->
-    <div class="overlay" id="profileOverlay">
-        <div class="overlay-header">
-            <h2>Профіль</h2>
-        </div>
-        <div class="overlay-content">
-            <div class="profile-card">
-                <div class="user-avatar" style="width: 64px; height: 64px; font-size: 24px;">U</div>
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">0</div>
-                        <div class="stat-label">Обрані</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">0</div>
-                        <div class="stat-label">Перегляди</div>
-                    </div>
+    <div class="filter-card">
+        <button class="filter-button" onclick="showPriceSelector()">
+            <span>Ціна</span>
+            <span>Не обрано ▸</span>
+        </button>
+    </div>
+
+    <div class="filter-card">
+        <button class="filter-button" onclick="showFurnitureSelector()">
+            <span>Меблі/техніка</span>
+            <span>Не обрано ▸</span>
+        </button>
+    </div>
+</div>
+
+<!-- Overlays -->
+<div class="overlay" id="profileOverlay">
+    <div class="overlay-header">
+        <h2>Профіль</h2>
+    </div>
+    <div class="overlay-content">
+        <div class="profile-card">
+            <div class="user-avatar" style="width: 64px; height: 64px; font-size: 24px;">U</div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Обрані</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Перегляди</div>
                 </div>
             </div>
-            <div class="filter-card">
-                <button class="filter-button" onclick="showFavorites()">
-                    <span>Обрані оголошення</span>
-                    <span>▸</span>
-                </button>
-            </div>
-            <div class="filter-card">
-                <button class="filter-button" onclick="showNotificationSettings()">
-                    <span>Налаштування сповіщень</span>
-                    <span>▸</span>
-                </button>
-            </div>
+        </div>
+        <div class="filter-card">
+            <button class="filter-button" onclick="showFavorites()">
+                <span>Обрані оголошення</span>
+                <span>▸</span>
+            </button>
+        </div>
+        <div class="filter-card">
+            <button class="filter-button" onclick="showNotificationSettings()">
+                <span>Налаштування сповіщень</span>
+                <span>▸</span>
+            </button>
         </div>
     </div>
+</div>
 
-    <div class="overlay" id="districtOverlay">
-        <div class="overlay-header">
-            <h2>Оберіть район</h2>
+<div class="overlay" id="districtOverlay">
+    <div class="overlay-header">
+        <h2>Оберіть район</h2>
+    </div>
+    <div class="overlay-content">
+        <div class="checkbox-item" onclick="toggleDistrict(this)">
+            <div class="checkbox"></div>
+            <span>Центр</span>
         </div>
-        <div class="overlay-content">
-            <div class="checkbox-item" onclick="toggleDistrict(this)">
-                <div class="checkbox"></div>
-                <span>Центр</span>
-            </div>
-            <div class="checkbox-item" onclick="toggleDistrict(this)">
-                <div class="checkbox"></div>
-                <span>Південь</span>
-            </div>
-            <div class="checkbox-item" onclick="toggleDistrict(this)">
-                <div class="checkbox"></div>
-                <span>Північ</span>
-            </div>
+        <div class="checkbox-item" onclick="toggleDistrict(this)">
+            <div class="checkbox"></div>
+            <span>Південь</span>
+        </div>
+        <div class="checkbox-item" onclick="toggleDistrict(this)">
+            <div class="checkbox"></div>
+            <span>Північ</span>
         </div>
     </div>
+</div>
 
-    <div class="overlay" id="roomOverlay">
-        <div class="overlay-header">
-            <h2>Кількість кімнат</h2>
-        </div>
-        <div class="overlay-content">
-            <div class="rooms-selector">
-                <button class="room-button" onclick="toggleRoom(this)">1</button>
-                <button class="room-button" onclick="toggleRoom(this)">2</button>
-                <button class="room-button" onclick="toggleRoom(this)">3</button>
-                <button class="room-button" onclick="toggleRoom(this)">4+</button>
-            </div>
+<div class="overlay" id="roomOverlay">
+    <div class="overlay-header">
+        <h2>Кількість кімнат</h2>
+    </div>
+    <div class="overlay-content">
+        <div class="rooms-selector">
+            <button class="room-button" onclick="toggleRoom(this)">1</button>
+            <button class="room-button" onclick="toggleRoom(this)">2</button>
+            <button class="room-button" onclick="toggleRoom(this)">3</button>
+            <button class="room-button" onclick="toggleRoom(this)">4+</button>
         </div>
     </div>
+</div>
 
-    <div class="overlay" id="priceOverlay">
-        <div class="overlay-header">
-            <h2>Діапазон цін</h2>
-        </div>
-        <div class="overlay-content">
-            <div class="price-inputs">
-                <input type="number" class="price-input" placeholder="Від" onchange="handlePriceChange()">
-                <input type="number" class="price-input" placeholder="До" onchange="handlePriceChange()">
-            </div>
+<div class="overlay" id="priceOverlay">
+    <div class="overlay-header">
+        <h2>Діапазон цін</h2>
+    </div>
+    <div class="overlay-content">
+        <div class="price-inputs">
+            <input type="number" class="price-input" placeholder="Від" onchange="handlePriceChange()">
+            <input type="number" class="price-input" placeholder="До" onchange="handlePriceChange()">
         </div>
     </div>
+</div>
 
-    <div class="overlay" id="furnitureOverlay">
-        <div class="overlay-header">
-            <h2>Меблі та техніка</h2>
+<div class="overlay" id="furnitureOverlay">
+    <div class="overlay-header">
+        <h2>Меблі та техніка</h2>
+    </div>
+    <div class="overlay-content">
+        <div class="checkbox-item" onclick="toggleFurniture(this)">
+            <div class="checkbox"></div>
+            <span>Холодильник</span>
         </div>
-        <div class="overlay-content">
-            <div class="checkbox-item" onclick="toggleFurniture(this)">
-                <div class="checkbox"></div>
-                <span>Холодильник</span>
-            </div>
-            <div class="checkbox-item" onclick="toggleFurniture(this)">
-                <div class="checkbox"></div>
-                <span>Пральна машина</span>
-            </div>
-            <div class="checkbox-item" onclick="toggleFurniture(this)">
-                <div class="checkbox"></div>
-                <span>Диван</span>
-            </div>
-            <div class="checkbox-item" onclick="toggleFurniture(this)">
-                <div class="checkbox"></div>
-                <span>Шафа</span>
-            </div>
+        <div class="checkbox-item" onclick="toggleFurniture(this)">
+            <div class="checkbox"></div>
+            <span>Пральна машина</span>
+        </div>
+        <div class="checkbox-item" onclick="toggleFurniture(this)">
+            <div class="checkbox"></div>
+            <span>Диван</span>
+        </div>
+        <div class="checkbox-item" onclick="toggleFurniture(this)">
+            <div class="checkbox"></div>
+            <span>Шафа</span>
         </div>
     </div>
+</div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-tg.expand();
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
 
-// Состояние фильтров
-const state = {
-    districts: [],
-    rooms: [],
-    price: { min: null, max: null },
-    furniture: []
-};
-
-// Инициализация пользователя
-if (tg.initDataUnsafe?.user) {
-    document.getElementById('userName').textContent = tg.initDataUnsafe.user.first_name;
-    document.getElementById('userAvatar').textContent = tg.initDataUnsafe.user.first_name[0];
-}
-
-// Управление главной кнопкой
-tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
-tg.MainButton.onClick(() => {
-    tg.sendData(JSON.stringify(state));
-    vibrateSuccess();
-});
-tg.MainButton.show();
-
-// Вибрация
-function vibrateSuccess() {
-    tg.HapticFeedback.notificationOccurred('success');
-}
-
-function vibrateMedium() {
-    tg.HapticFeedback.impactOccurred('medium');
-}
-
-function vibrateLight() {
-    tg.HapticFeedback.impactOccurred('light');
-}
-
-// Управление оверлеями
-let currentOverlay = null;
-
-function showOverlay(overlayId) {
-    if (currentOverlay) {
-        currentOverlay.classList.remove('active');
-    }
-    currentOverlay = document.getElementById(overlayId);
-    currentOverlay.classList.add('active');
-    tg.BackButton.show();
-    vibrateMedium();
-}
-
-function hideOverlay() {
-    if (currentOverlay) {
-        currentOverlay.classList.remove('active');
-        currentOverlay = null;
-        tg.BackButton.hide();
-        vibrateLight();
-        updateFilterLabels();
-    }
-}
-
-// Обработчики показа секций
-function showProfile() { showOverlay('profileOverlay'); }
-function showDistrictSelector() { showOverlay('districtOverlay'); }
-function showRoomSelector() { showOverlay('roomOverlay'); }
-function showPriceSelector() { showOverlay('priceOverlay'); }
-function showFurnitureSelector() { showOverlay('furnitureOverlay'); }
-
-function showFavorites() {
-    tg.sendData(JSON.stringify({ action: 'showFavorites' }));
-    hideOverlay();
-}
-
-function showNotificationSettings() {
-    tg.sendData(JSON.stringify({ action: 'showNotifications' }));
-    hideOverlay();
-}
-
-// Обработка кнопки назад
-tg.BackButton.onClick(() => {
-    hideOverlay();
-});
-
-// Обработчики выбора элементов
-function toggleDistrict(element) {
-    const checkbox = element.querySelector('.checkbox');
-    const district = element.querySelector('span').textContent;
-    
-    if (checkbox.classList.toggle('checked')) {
-        state.districts.push(district);
-    } else {
-        state.districts = state.districts.filter(d => d !== district);
-    }
-    
-    vibrateLight();
-    updateMainButton();
-}
-
-function toggleRoom(button) {
-    const room = button.textContent;
-    button.classList.toggle('selected');
-    
-    if (button.classList.contains('selected')) {
-        state.rooms.push(room);
-    } else {
-        state.rooms = state.rooms.filter(r => r !== room);
-    }
-    
-    vibrateLight();
-    updateMainButton();
-}
-
-function handlePriceChange() {
-    const inputs = document.querySelectorAll('#priceOverlay .price-input');
-    state.price = {
-        min: inputs[0].value || null,
-        max: inputs[1].value || null
+    // Состояние фильтров
+    const state = {
+        districts: [],
+        rooms: [],
+        price: {min: null, max: null},
+        furniture: []
     };
-    vibrateMedium();
-    updateMainButton();
-}
 
-function toggleFurniture(element) {
-    const checkbox = element.querySelector('.checkbox');
-    const furniture = element.querySelector('span').textContent;
-    
-    if (checkbox.classList.toggle('checked')) {
-        state.furniture.push(furniture);
-    } else {
-        state.furniture = state.furniture.filter(f => f !== furniture);
-    }
-    
-    vibrateLight();
-    updateMainButton();
-}
-
-// Обновление лейблов фильтров
-function updateFilterLabels() {
-    // Районы
-    const districtButton = document.querySelector('[onclick="showDistrictSelector()"]');
-    const districtLabel = districtButton.querySelector('span:last-child');
-    districtLabel.textContent = state.districts.length > 0 
-        ? `Обрано: ${state.districts.length}` 
-        : 'Не обрано ▸';
-
-    // Комнаты
-    const roomButton = document.querySelector('[onclick="showRoomSelector()"]');
-    const roomLabel = roomButton.querySelector('span:last-child');
-    roomLabel.textContent = state.rooms.length > 0 
-        ? `Обрано: ${state.rooms.length}` 
-        : 'Не обрано ▸';
-
-    // Цена
-    const priceButton = document.querySelector('[onclick="showPriceSelector()"]');
-    const priceLabel = priceButton.querySelector('span:last-child');
-    if (state.price.min || state.price.max) {
-        const min = state.price.min ? `від ${state.price.min}` : '';
-        const max = state.price.max ? `до ${state.price.max}` : '';
-        priceLabel.textContent = `${min} ${max}`.trim();
-    } else {
-        priceLabel.textContent = 'Не обрано ▸';
+    // Инициализация пользователя
+    if (tg.initDataUnsafe?.user) {
+        document.getElementById('userName').textContent = tg.initDataUnsafe.user.first_name;
+        document.getElementById('userAvatar').textContent = tg.initDataUnsafe.user.first_name[0];
     }
 
-    // Мебель
-    const furnitureButton = document.querySelector('[onclick="showFurnitureSelector()"]');
-    const furnitureLabel = furnitureButton.querySelector('span:last-child');
-    furnitureLabel.textContent = state.furniture.length > 0 
-        ? `Обрано: ${state.furniture.length}` 
-        : 'Не обрано ▸';
-}
+    // Управление главной кнопкой
+    tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
+    tg.MainButton.onClick(() => {
+        tg.sendData(JSON.stringify(state));
+        vibrateSuccess();
+        setTimeout(() => {
+            tg.close();
+        }, 100);
 
-// Обновление главной кнопки
-function updateMainButton() {
-    const hasFilters = 
-        state.districts.length > 0 ||
-        state.rooms.length > 0 ||
-        state.price.min !== null ||
-        state.price.max !== null ||
-        state.furniture.length > 0;
+    });
+    tg.MainButton.show();
 
-    if (hasFilters) {
-        tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
-        tg.MainButton.show();
-    } else {
-        tg.MainButton.setText('ОБЕРІТЬ ФІЛЬТРИ');
+    // Вибрация
+    function vibrateSuccess() {
+        tg.HapticFeedback.notificationOccurred('success');
     }
-}
 
-// Синхронизация UI с состоянием при открытии оверлеев
-function syncUIWithState() {
-    // Синхронизация районов
-    document.querySelectorAll('#districtOverlay .checkbox-item').forEach(item => {
-        const district = item.querySelector('span').textContent;
-        const checkbox = item.querySelector('.checkbox');
-        if (state.districts.includes(district)) {
-            checkbox.classList.add('checked');
+    function vibrateMedium() {
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function vibrateLight() {
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    // Управление оверлеями
+    let currentOverlay = null;
+
+    function showOverlay(overlayId) {
+        if (currentOverlay) {
+            currentOverlay.classList.remove('active');
         }
+        currentOverlay = document.getElementById(overlayId);
+        currentOverlay.classList.add('active');
+        tg.BackButton.show();
+        vibrateMedium();
+    }
+
+    function hideOverlay() {
+        if (currentOverlay) {
+            currentOverlay.classList.remove('active');
+            currentOverlay = null;
+            tg.BackButton.hide();
+            vibrateLight();
+            updateFilterLabels();
+        }
+    }
+
+    // Обработчики показа секций
+    function showProfile() {
+        showOverlay('profileOverlay');
+    }
+
+    function showDistrictSelector() {
+        showOverlay('districtOverlay');
+    }
+
+    function showRoomSelector() {
+        showOverlay('roomOverlay');
+    }
+
+    function showPriceSelector() {
+        showOverlay('priceOverlay');
+    }
+
+    function showFurnitureSelector() {
+        showOverlay('furnitureOverlay');
+    }
+
+    function showFavorites() {
+        tg.sendData(JSON.stringify({action: 'showFavorites'}));
+        vibrateSuccess();
+        setTimeout(() => {
+            tg.close();
+        }, 100);
+
+    }
+
+    function showNotificationSettings() {
+        tg.sendData(JSON.stringify({action: 'showNotifications'}));
+        vibrateSuccess();
+        setTimeout(() => {
+            tg.close();
+        }, 100);
+    }
+
+    // Обработка кнопки назад
+    tg.BackButton.onClick(() => {
+        hideOverlay();
     });
 
-    // Синхронизация комнат
-    document.querySelectorAll('#roomOverlay .room-button').forEach(button => {
-        if (state.rooms.includes(button.textContent)) {
-            button.classList.add('selected');
+    // Обработчики выбора элементов
+    function toggleDistrict(element) {
+        const checkbox = element.querySelector('.checkbox');
+        const district = element.querySelector('span').textContent;
+
+        if (checkbox.classList.toggle('checked')) {
+            state.districts.push(district);
+        } else {
+            state.districts = state.districts.filter(d => d !== district);
         }
-    });
 
-    // Синхронизация цен
-    const priceInputs = document.querySelectorAll('#priceOverlay .price-input');
-    priceInputs[0].value = state.price.min || '';
-    priceInputs[1].value = state.price.max || '';
+        vibrateLight();
+        updateMainButton();
+    }
 
-    // Синхронизация мебели
-    document.querySelectorAll('#furnitureOverlay .checkbox-item').forEach(item => {
-        const furniture = item.querySelector('span').textContent;
-        const checkbox = item.querySelector('.checkbox');
-        if (state.furniture.includes(furniture)) {
-            checkbox.classList.add('checked');
+    function toggleRoom(button) {
+        const room = button.textContent;
+        button.classList.toggle('selected');
+
+        if (button.classList.contains('selected')) {
+            state.rooms.push(room);
+        } else {
+            state.rooms = state.rooms.filter(r => r !== room);
         }
-    });
-}
 
-// Вызываем начальное обновление лейблов
-updateFilterLabels();
+        vibrateLight();
+        updateMainButton();
+    }
 
-// Добавляем синхронизацию при открытии каждого оверлея
-document.querySelectorAll('.overlay').forEach(overlay => {
-    overlay.addEventListener('transitionend', function(e) {
-        if (e.propertyName === 'opacity' && this.classList.contains('active')) {
-            syncUIWithState();
+    function handlePriceChange() {
+        const inputs = document.querySelectorAll('#priceOverlay .price-input');
+        state.price = {
+            min: inputs[0].value || null,
+            max: inputs[1].value || null
+        };
+        vibrateMedium();
+        updateMainButton();
+    }
+
+    function toggleFurniture(element) {
+        const checkbox = element.querySelector('.checkbox');
+        const furniture = element.querySelector('span').textContent;
+
+        if (checkbox.classList.toggle('checked')) {
+            state.furniture.push(furniture);
+        } else {
+            state.furniture = state.furniture.filter(f => f !== furniture);
         }
+
+        vibrateLight();
+        updateMainButton();
+    }
+
+    // Обновление лейблов фильтров
+    function updateFilterLabels() {
+        // Районы
+        const districtButton = document.querySelector('[onclick="showDistrictSelector()"]');
+        const districtLabel = districtButton.querySelector('span:last-child');
+        districtLabel.textContent = state.districts.length > 0
+            ? `Обрано: ${state.districts.length}`
+            : 'Не обрано ▸';
+
+        // Комнаты
+        const roomButton = document.querySelector('[onclick="showRoomSelector()"]');
+        const roomLabel = roomButton.querySelector('span:last-child');
+        roomLabel.textContent = state.rooms.length > 0
+            ? `Обрано: ${state.rooms.length}`
+            : 'Не обрано ▸';
+
+        // Цена
+        const priceButton = document.querySelector('[onclick="showPriceSelector()"]');
+        const priceLabel = priceButton.querySelector('span:last-child');
+        if (state.price.min || state.price.max) {
+            const min = state.price.min ? `від ${state.price.min}` : '';
+            const max = state.price.max ? `до ${state.price.max}` : '';
+            priceLabel.textContent = `${min} ${max}`.trim();
+        } else {
+            priceLabel.textContent = 'Не обрано ▸';
+        }
+
+        // Мебель
+        const furnitureButton = document.querySelector('[onclick="showFurnitureSelector()"]');
+        const furnitureLabel = furnitureButton.querySelector('span:last-child');
+        furnitureLabel.textContent = state.furniture.length > 0
+            ? `Обрано: ${state.furniture.length}`
+            : 'Не обрано ▸';
+    }
+
+    // Обновление главной кнопки
+    function updateMainButton() {
+        const hasFilters =
+            state.districts.length > 0 ||
+            state.rooms.length > 0 ||
+            state.price.min !== null ||
+            state.price.max !== null ||
+            state.furniture.length > 0;
+
+        if (hasFilters) {
+            tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
+            tg.MainButton.show();
+        } else {
+            tg.MainButton.setText('ОБЕРІТЬ ФІЛЬТРИ');
+        }
+    }
+
+    // Синхронизация UI с состоянием при открытии оверлеев
+    function syncUIWithState() {
+        // Синхронизация районов
+        document.querySelectorAll('#districtOverlay .checkbox-item').forEach(item => {
+            const district = item.querySelector('span').textContent;
+            const checkbox = item.querySelector('.checkbox');
+            if (state.districts.includes(district)) {
+                checkbox.classList.add('checked');
+            }
+        });
+
+        // Синхронизация комнат
+        document.querySelectorAll('#roomOverlay .room-button').forEach(button => {
+            if (state.rooms.includes(button.textContent)) {
+                button.classList.add('selected');
+            }
+        });
+
+        // Синхронизация цен
+        const priceInputs = document.querySelectorAll('#priceOverlay .price-input');
+        priceInputs[0].value = state.price.min || '';
+        priceInputs[1].value = state.price.max || '';
+
+        // Синхронизация мебели
+        document.querySelectorAll('#furnitureOverlay .checkbox-item').forEach(item => {
+            const furniture = item.querySelector('span').textContent;
+            const checkbox = item.querySelector('.checkbox');
+            if (state.furniture.includes(furniture)) {
+                checkbox.classList.add('checked');
+            }
+        });
+    }
+
+    // Вызываем начальное обновление лейблов
+    updateFilterLabels();
+
+    // Добавляем синхронизацию при открытии каждого оверлея
+    document.querySelectorAll('.overlay').forEach(overlay => {
+        overlay.addEventListener('transitionend', function (e) {
+            if (e.propertyName === 'opacity' && this.classList.contains('active')) {
+                syncUIWithState();
+            }
+        });
     });
-});
-        </script>
-    </body>
+</script>
+</body>
 </html>
