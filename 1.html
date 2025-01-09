@@ -386,7 +386,7 @@
 tg.expand();
 
 // Состояние фильтров
-const filters = {
+const state = {
     districts: [],
     rooms: [],
     price: { min: null, max: null },
@@ -402,10 +402,7 @@ if (tg.initDataUnsafe?.user) {
 // Управление главной кнопкой
 tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
 tg.MainButton.onClick(() => {
-    tg.sendData(JSON.stringify({
-        action: 'applyFilters',
-        filters: filters
-    }));
+    tg.sendData(JSON.stringify(state));
     vibrateSuccess();
 });
 tg.MainButton.show();
@@ -442,41 +439,8 @@ function hideOverlay() {
         currentOverlay = null;
         tg.BackButton.hide();
         vibrateLight();
-        updateFilterDisplay();
+        updateFilterLabels();
     }
-}
-
-// Обновление отображения выбранных фильтров
-function updateFilterDisplay() {
-    // Районы
-    const districtButton = document.querySelector('.filter-button:nth-child(1) span:last-child');
-    districtButton.textContent = filters.districts.length > 0 
-        ? `Обрано: ${filters.districts.length}` 
-        : 'Не обрано ▸';
-
-    // Комнаты
-    const roomButton = document.querySelector('.filter-button:nth-child(2) span:last-child');
-    roomButton.textContent = filters.rooms.length > 0 
-        ? `Обрано: ${filters.rooms.length}` 
-        : 'Не обрано ▸';
-
-    // Цена
-    const priceButton = document.querySelector('.filter-button:nth-child(3) span:last-child');
-    if (filters.price.min || filters.price.max) {
-        let priceText = '';
-        if (filters.price.min) priceText += `від ${filters.price.min}`;
-        if (filters.price.min && filters.price.max) priceText += ' ';
-        if (filters.price.max) priceText += `до ${filters.price.max}`;
-        priceButton.textContent = priceText;
-    } else {
-        priceButton.textContent = 'Не обрано ▸';
-    }
-
-    // Мебель
-    const furnitureButton = document.querySelector('.filter-button:nth-child(4) span:last-child');
-    furnitureButton.textContent = filters.furniture.length > 0 
-        ? `Обрано: ${filters.furniture.length}` 
-        : 'Не обрано ▸';
 }
 
 // Обработчики показа секций
@@ -487,19 +451,13 @@ function showPriceSelector() { showOverlay('priceOverlay'); }
 function showFurnitureSelector() { showOverlay('furnitureOverlay'); }
 
 function showFavorites() {
-    tg.sendData(JSON.stringify({
-        action: 'showFavorites'
-    }));
+    tg.sendData(JSON.stringify({ action: 'showFavorites' }));
     hideOverlay();
-    tg.close();
 }
 
 function showNotificationSettings() {
-    tg.sendData(JSON.stringify({
-        action: 'showNotifications'
-    }));
+    tg.sendData(JSON.stringify({ action: 'showNotifications' }));
     hideOverlay();
-    tg.close();
 }
 
 // Обработка кнопки назад
@@ -511,12 +469,11 @@ tg.BackButton.onClick(() => {
 function toggleDistrict(element) {
     const checkbox = element.querySelector('.checkbox');
     const district = element.querySelector('span').textContent;
-    checkbox.classList.toggle('checked');
     
-    if (checkbox.classList.contains('checked')) {
-        filters.districts.push(district);
+    if (checkbox.classList.toggle('checked')) {
+        state.districts.push(district);
     } else {
-        filters.districts = filters.districts.filter(d => d !== district);
+        state.districts = state.districts.filter(d => d !== district);
     }
     
     vibrateLight();
@@ -524,13 +481,13 @@ function toggleDistrict(element) {
 }
 
 function toggleRoom(button) {
-    button.classList.toggle('selected');
     const room = button.textContent;
+    button.classList.toggle('selected');
     
     if (button.classList.contains('selected')) {
-        filters.rooms.push(room);
+        state.rooms.push(room);
     } else {
-        filters.rooms = filters.rooms.filter(r => r !== room);
+        state.rooms = state.rooms.filter(r => r !== room);
     }
     
     vibrateLight();
@@ -539,9 +496,10 @@ function toggleRoom(button) {
 
 function handlePriceChange() {
     const inputs = document.querySelectorAll('#priceOverlay .price-input');
-    filters.price.min = inputs[0].value || null;
-    filters.price.max = inputs[1].value || null;
-    
+    state.price = {
+        min: inputs[0].value || null,
+        max: inputs[1].value || null
+    };
     vibrateMedium();
     updateMainButton();
 }
@@ -549,46 +507,112 @@ function handlePriceChange() {
 function toggleFurniture(element) {
     const checkbox = element.querySelector('.checkbox');
     const furniture = element.querySelector('span').textContent;
-    checkbox.classList.toggle('checked');
     
-    if (checkbox.classList.contains('checked')) {
-        filters.furniture.push(furniture);
+    if (checkbox.classList.toggle('checked')) {
+        state.furniture.push(furniture);
     } else {
-        filters.furniture = filters.furniture.filter(f => f !== furniture);
+        state.furniture = state.furniture.filter(f => f !== furniture);
     }
     
     vibrateLight();
     updateMainButton();
 }
 
+// Обновление лейблов фильтров
+function updateFilterLabels() {
+    // Районы
+    const districtButton = document.querySelector('[onclick="showDistrictSelector()"]');
+    const districtLabel = districtButton.querySelector('span:last-child');
+    districtLabel.textContent = state.districts.length > 0 
+        ? `Обрано: ${state.districts.length}` 
+        : 'Не обрано ▸';
+
+    // Комнаты
+    const roomButton = document.querySelector('[onclick="showRoomSelector()"]');
+    const roomLabel = roomButton.querySelector('span:last-child');
+    roomLabel.textContent = state.rooms.length > 0 
+        ? `Обрано: ${state.rooms.length}` 
+        : 'Не обрано ▸';
+
+    // Цена
+    const priceButton = document.querySelector('[onclick="showPriceSelector()"]');
+    const priceLabel = priceButton.querySelector('span:last-child');
+    if (state.price.min || state.price.max) {
+        const min = state.price.min ? `від ${state.price.min}` : '';
+        const max = state.price.max ? `до ${state.price.max}` : '';
+        priceLabel.textContent = `${min} ${max}`.trim();
+    } else {
+        priceLabel.textContent = 'Не обрано ▸';
+    }
+
+    // Мебель
+    const furnitureButton = document.querySelector('[onclick="showFurnitureSelector()"]');
+    const furnitureLabel = furnitureButton.querySelector('span:last-child');
+    furnitureLabel.textContent = state.furniture.length > 0 
+        ? `Обрано: ${state.furniture.length}` 
+        : 'Не обрано ▸';
+}
+
 // Обновление главной кнопки
 function updateMainButton() {
     const hasFilters = 
-        filters.districts.length > 0 ||
-        filters.rooms.length > 0 ||
-        filters.price.min !== null ||
-        filters.price.max !== null ||
-        filters.furniture.length > 0;
+        state.districts.length > 0 ||
+        state.rooms.length > 0 ||
+        state.price.min !== null ||
+        state.price.max !== null ||
+        state.furniture.length > 0;
 
     if (hasFilters) {
         tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
         tg.MainButton.show();
     } else {
         tg.MainButton.setText('ОБЕРІТЬ ФІЛЬТРИ');
-        tg.MainButton.show();
     }
 }
 
-// Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-    // Установка максимальной ширины для инпутов цены
-    const priceInputs = document.querySelectorAll('.price-input');
-    priceInputs.forEach(input => {
-        input.style.maxWidth = '150px';
+// Синхронизация UI с состоянием при открытии оверлеев
+function syncUIWithState() {
+    // Синхронизация районов
+    document.querySelectorAll('#districtOverlay .checkbox-item').forEach(item => {
+        const district = item.querySelector('span').textContent;
+        const checkbox = item.querySelector('.checkbox');
+        if (state.districts.includes(district)) {
+            checkbox.classList.add('checked');
+        }
     });
-    
-    updateFilterDisplay();
-    updateMainButton();
+
+    // Синхронизация комнат
+    document.querySelectorAll('#roomOverlay .room-button').forEach(button => {
+        if (state.rooms.includes(button.textContent)) {
+            button.classList.add('selected');
+        }
+    });
+
+    // Синхронизация цен
+    const priceInputs = document.querySelectorAll('#priceOverlay .price-input');
+    priceInputs[0].value = state.price.min || '';
+    priceInputs[1].value = state.price.max || '';
+
+    // Синхронизация мебели
+    document.querySelectorAll('#furnitureOverlay .checkbox-item').forEach(item => {
+        const furniture = item.querySelector('span').textContent;
+        const checkbox = item.querySelector('.checkbox');
+        if (state.furniture.includes(furniture)) {
+            checkbox.classList.add('checked');
+        }
+    });
+}
+
+// Вызываем начальное обновление лейблов
+updateFilterLabels();
+
+// Добавляем синхронизацию при открытии каждого оверлея
+document.querySelectorAll('.overlay').forEach(overlay => {
+    overlay.addEventListener('transitionend', function(e) {
+        if (e.propertyName === 'opacity' && this.classList.contains('active')) {
+            syncUIWithState();
+        }
+    });
 });
         </script>
     </body>
