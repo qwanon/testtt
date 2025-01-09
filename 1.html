@@ -1,225 +1,383 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Фильтр недвижимости</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Фільтр нерухомості</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --animation-duration: 0.3s;
+            --tg-theme-button-color: #3390ec;
+            --tg-theme-button-text-color: #ffffff;
+            --safe-area-top: env(safe-area-inset-top);
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: all var(--animation-duration) ease;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #000);
-            padding-bottom: 60px;
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-top: var(--safe-area-top);
         }
-        
+
         .header {
-            padding: 16px;
-            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            margin-bottom: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 16px;
+            background: var(--tg-theme-bg-color, #fff);
+            display: flex;
+            align-items: center;
+            height: 56px;
+            z-index: 1000;
+            padding-top: calc(8px + var(--safe-area-top));
+        }
+
+        .profile-button {
             display: flex;
             align-items: center;
             gap: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        
+
+        .profile-button:active {
+            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
+        }
+
         .user-avatar {
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: var(--tg-theme-button-color, #3390ec);
+            background: var(--tg-theme-button-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--tg-theme-button-text-color, #fff);
+            color: var(--tg-theme-button-text-color);
             font-weight: bold;
         }
-        
-        .filter-section {
-            padding: 16px;
-            margin: 8px 16px;
+
+        .main-content {
+            padding: 72px 16px 16px 16px;
+        }
+
+        .filter-card {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             border-radius: 12px;
+            margin-bottom: 12px;
             overflow: hidden;
         }
-        
-        .filter-header {
+
+        .filter-button {
+            padding: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            cursor: pointer;
-        }
-        
-        .filter-content {
-            max-height: 0;
-            opacity: 0;
-            transition: all var(--animation-duration) ease;
-        }
-        
-        .filter-content.expanded {
-            max-height: 500px;
-            opacity: 1;
-        }
-        
-        .range-inputs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        
-        input[type="number"], input[type="text"] {
-            background: var(--tg-theme-bg-color, #fff);
-            border: 1px solid var(--tg-theme-hint-color, #999);
-            padding: 8px;
-            border-radius: 8px;
-            color: var(--tg-theme-text-color, #000);
             width: 100%;
-        }
-        
-        .tag-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        
-        .tag {
-            background: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #fff);
-            padding: 6px 12px;
-            border-radius: 16px;
+            border: none;
+            background: none;
+            color: inherit;
+            font: inherit;
             cursor: pointer;
-            user-select: none;
         }
-        
-        .tag.selected {
-            background: var(--tg-theme-text-color, #000);
+
+        .filter-button:active {
+            background-color: rgba(0, 0, 0, 0.05);
         }
-        
-        .notifications {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 16px;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 24px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
+
+        .overlay {
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: var(--tg-theme-hint-color, #999);
-            transition: .4s;
-            border-radius: 24px;
+            background: var(--tg-theme-bg-color, #fff);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--animation-duration) ease;
         }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
-        
-        input:checked + .slider {
-            background-color: var(--tg-theme-button-color, #3390ec);
+
+        .overlay-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: var(--tg-theme-bg-color, #fff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2001;
+            padding-top: calc(16px + var(--safe-area-top));
         }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
+
+        .overlay-content {
+            padding: 72px 16px 16px 16px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .checkbox-item:active {
+            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--tg-theme-button-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checkbox.checked {
+            background-color: var(--tg-theme-button-color);
+        }
+
+        .checkbox.checked::after {
+            content: "✓";
+            color: white;
+        }
+
+        .price-inputs {
+            display: flex;
+            gap: 8px;
+            padding: 16px;
+        }
+
+        .price-input {
+            flex: 1;
+            background: var(--tg-theme-bg-color, #fff);
+            border: 1px solid var(--tg-theme-secondary-bg-color, #f5f5f5);
+            padding: 12px;
+            border-radius: 8px;
+            font: inherit;
+            color: inherit;
+        }
+
+        .rooms-selector {
+            display: flex;
+            gap: 8px;
+            padding: 16px;
+            flex-wrap: wrap;
+        }
+
+        .room-button {
+            flex: 1;
+            min-width: 60px;
+            padding: 12px;
+            border: 2px solid var(--tg-theme-button-color);
+            border-radius: 8px;
+            background: none;
+            color: var(--tg-theme-button-color);
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .room-button.selected {
+            background: var(--tg-theme-button-color);
+            color: white;
+        }
+
+        /* Profile Section */
+        .profile-section {
+            padding: 16px;
+        }
+
+        .profile-card {
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--tg-theme-hint-color, #999);
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="user-avatar" id="userAvatar">U</div>
-        <div id="userName">Пользователь</div>
+        <div class="profile-button" onclick="showProfile()">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <div id="userName">Користувач</div>
+        </div>
     </div>
 
-    <div class="filter-section">
-        <div class="filter-header" onclick="toggleSection('price')">
-            <span>Цена</span>
-            <span>▼</span>
+    <div class="main-content">
+        <div class="filter-card">
+            <button class="filter-button" onclick="showDistrictSelector()">
+                <span>Район</span>
+                <span>Не обрано ▸</span>
+            </button>
         </div>
-        <div class="filter-content" id="price">
-            <div class="range-inputs">
-                <input type="number" placeholder="От" onchange="vibrateMedium()">
-                <input type="number" placeholder="До" onchange="vibrateMedium()">
+
+        <div class="filter-card">
+            <button class="filter-button" onclick="showRoomSelector()">
+                <span>Кімнати</span>
+                <span>Не обрано ▸</span>
+            </button>
+        </div>
+
+        <div class="filter-card">
+            <button class="filter-button" onclick="showPriceSelector()">
+                <span>Ціна</span>
+                <span>Не обрано ▸</span>
+            </button>
+        </div>
+
+        <div class="filter-card">
+            <button class="filter-button" onclick="showFurnitureSelector()">
+                <span>Меблі/техніка</span>
+                <span>Не обрано ▸</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Overlays -->
+    <div class="overlay" id="profileOverlay">
+        <div class="overlay-header">
+            <h2>Профіль</h2>
+        </div>
+        <div class="overlay-content">
+            <div class="profile-card">
+                <div class="user-avatar" style="width: 64px; height: 64px; font-size: 24px;">U</div>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Обрані</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Перегляди</div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-card">
+                <button class="filter-button" onclick="showFavorites()">
+                    <span>Обрані оголошення</span>
+                    <span>▸</span>
+                </button>
+            </div>
+            <div class="filter-card">
+                <button class="filter-button" onclick="showNotificationSettings()">
+                    <span>Налаштування сповіщень</span>
+                    <span>▸</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="filter-section">
-        <div class="filter-header" onclick="toggleSection('location')">
-            <span>Расположение</span>
-            <span>▼</span>
+    <div class="overlay" id="districtOverlay">
+        <div class="overlay-header">
+            <h2>Оберіть район</h2>
         </div>
-        <div class="filter-content" id="location">
-            <input type="text" placeholder="Введите район или улицу" onchange="vibrateMedium()">
-            <div class="tag-container">
-                <div class="tag" onclick="toggleTag(this)">Центр</div>
-                <div class="tag" onclick="toggleTag(this)">Север</div>
-                <div class="tag" onclick="toggleTag(this)">Юг</div>
-                <div class="tag" onclick="toggleTag(this)">Запад</div>
-                <div class="tag" onclick="toggleTag(this)">Восток</div>
+        <div class="overlay-content">
+            <div class="checkbox-item" onclick="toggleDistrict(this)">
+                <div class="checkbox"></div>
+                <span>Центр</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleDistrict(this)">
+                <div class="checkbox"></div>
+                <span>Південь</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleDistrict(this)">
+                <div class="checkbox"></div>
+                <span>Північ</span>
             </div>
         </div>
     </div>
 
-    <div class="filter-section">
-        <div class="filter-header" onclick="toggleSection('parameters')">
-            <span>Параметры жилья</span>
-            <span>▼</span>
+    <div class="overlay" id="roomOverlay">
+        <div class="overlay-header">
+            <h2>Кількість кімнат</h2>
         </div>
-        <div class="filter-content" id="parameters">
-            <div class="range-inputs">
-                <input type="number" placeholder="Комнат от" onchange="vibrateMedium()">
-                <input type="number" placeholder="Комнат до" onchange="vibrateMedium()">
-            </div>
-            <div class="tag-container">
-                <div class="tag" onclick="toggleTag(this)">Парковка</div>
-                <div class="tag" onclick="toggleTag(this)">Балкон</div>
-                <div class="tag" onclick="toggleTag(this)">Ремонт</div>
-                <div class="tag" onclick="toggleTag(this)">Мебель</div>
+        <div class="overlay-content">
+            <div class="rooms-selector">
+                <button class="room-button" onclick="toggleRoom(this)">1</button>
+                <button class="room-button" onclick="toggleRoom(this)">2</button>
+                <button class="room-button" onclick="toggleRoom(this)">3</button>
+                <button class="room-button" onclick="toggleRoom(this)">4+</button>
             </div>
         </div>
     </div>
 
-    <div class="filter-section">
-        <div class="notifications">
-            <label class="toggle-switch">
-                <input type="checkbox" onchange="toggleNotifications(this)">
-                <span class="slider"></span>
-            </label>
-            <span>Получать уведомления о новых предложениях</span>
+    <div class="overlay" id="priceOverlay">
+        <div class="overlay-header">
+            <h2>Діапазон цін</h2>
+        </div>
+        <div class="overlay-content">
+            <div class="price-inputs">
+                <input type="number" class="price-input" placeholder="Від" onchange="handlePriceChange()">
+                <input type="number" class="price-input" placeholder="До" onchange="handlePriceChange()">
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="furnitureOverlay">
+        <div class="overlay-header">
+            <h2>Меблі та техніка</h2>
+        </div>
+        <div class="overlay-content">
+            <div class="checkbox-item" onclick="toggleFurniture(this)">
+                <div class="checkbox"></div>
+                <span>Холодильник</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleFurniture(this)">
+                <div class="checkbox"></div>
+                <span>Пральна машина</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleFurniture(this)">
+                <div class="checkbox"></div>
+                <span>Диван</span>
+            </div>
+            <div class="checkbox-item" onclick="toggleFurniture(this)">
+                <div class="checkbox"></div>
+                <span>Шафа</span>
+            </div>
         </div>
     </div>
 
@@ -233,11 +391,17 @@
             document.getElementById('userAvatar').textContent = tg.initDataUnsafe.user.first_name[0];
         }
 
-        // Настройка главной кнопки
-        tg.MainButton.setText('ПОКАЗАТЬ РЕЗУЛЬТАТЫ');
+        // Управление главной кнопкой
+        tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
         tg.MainButton.onClick(() => {
+            // Здесь можно отправить данные боту
+            tg.sendData(JSON.stringify({
+                districts: getSelectedDistricts(),
+                rooms: getSelectedRooms(),
+                price: getPriceRange(),
+                furniture: getSelectedFurniture()
+            }));
             vibrateSuccess();
-            tg.close();
         });
         tg.MainButton.show();
 
@@ -254,58 +418,132 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Управление секциями
-        let currentSection = null;
-        
-        function toggleSection(sectionId) {
-            vibrateLight();
-            const content = document.getElementById(sectionId);
-            const isExpanding = !content.classList.contains('expanded');
-            
-            if (currentSection && currentSection !== content) {
-                currentSection.classList.remove('expanded');
+        // Управление оверлеями
+        let currentOverlay = null;
+
+        function showOverlay(overlayId) {
+            if (currentOverlay) {
+                currentOverlay.classList.remove('active');
             }
-            
-            content.classList.toggle('expanded');
-            
-            if (isExpanding) {
-                currentSection = content;
-                tg.BackButton.show();
-            } else {
-                currentSection = null;
-                tg.BackButton.hide();
-            }
+            currentOverlay = document.getElementById(overlayId);
+            currentOverlay.classList.add('active');
+            tg.BackButton.show();
+            vibrateMedium();
         }
 
-        // Обработка кнопки назад
-        tg.BackButton.onClick(() => {
-            if (currentSection) {
-                currentSection.classList.remove('expanded');
-                currentSection = null;
+        function hideOverlay() {
+            if (currentOverlay) {
+                currentOverlay.classList.remove('active');
+                currentOverlay = null;
                 tg.BackButton.hide();
                 vibrateLight();
             }
-        });
-
-        // Управление тегами
-        function toggleTag(tag) {
-            vibrateLight();
-            tag.classList.toggle('selected');
         }
 
-        // Уведомления
-        function toggleNotifications(checkbox) {
-            if (checkbox.checked) {
-                vibrateSuccess();
+        function showProfile() { showOverlay('profileOverlay'); }
+            function showDistrictSelector() { showOverlay('districtOverlay'); }
+            function showRoomSelector() { showOverlay('roomOverlay'); }
+            function showPriceSelector() { showOverlay('priceOverlay'); }
+            function showFurnitureSelector() { showOverlay('furnitureOverlay'); }
+            function showFavorites() { 
+                hideOverlay();
+                // В будущем здесь будет открываться страница с избранным
                 tg.showPopup({
-                    title: 'Уведомления включены',
-                    message: 'Вы будете получать уведомления о новых предложениях',
+                    title: 'Обрані оголошення',
+                    message: 'Ця функція поки недоступна',
                     buttons: [{text: 'OK'}]
                 });
-            } else {
-                vibrateLight();
             }
-        }
-    </script>
-</body>
+            function showNotificationSettings() {
+                hideOverlay();
+                // В будущем здесь будут настройки уведомлений
+                tg.showPopup({
+                    title: 'Налаштування сповіщень',
+                    message: 'Ця функція поки недоступна',
+                    buttons: [{text: 'OK'}]
+                });
+            }
+
+            // Обработка кнопки назад
+            tg.BackButton.onClick(() => {
+                hideOverlay();
+            });
+
+            // Обработчики выбора элементов
+            function toggleDistrict(element) {
+                const checkbox = element.querySelector('.checkbox');
+                checkbox.classList.toggle('checked');
+                vibrateLight();
+                updateMainButton();
+            }
+
+            function toggleRoom(button) {
+                button.classList.toggle('selected');
+                vibrateLight();
+                updateMainButton();
+            }
+
+            function handlePriceChange() {
+                vibrateMedium();
+                updateMainButton();
+            }
+
+            function toggleFurniture(element) {
+                const checkbox = element.querySelector('.checkbox');
+                checkbox.classList.toggle('checked');
+                vibrateLight();
+                updateMainButton();
+            }
+
+            // Получение выбранных значений
+            function getSelectedDistricts() {
+                const districts = [];
+                document.querySelectorAll('#districtOverlay .checkbox.checked').forEach(checkbox => {
+                    districts.push(checkbox.nextElementSibling.textContent);
+                });
+                return districts;
+            }
+
+            function getSelectedRooms() {
+                const rooms = [];
+                document.querySelectorAll('#roomOverlay .room-button.selected').forEach(button => {
+                    rooms.push(button.textContent);
+                });
+                return rooms;
+            }
+
+            function getPriceRange() {
+                const inputs = document.querySelectorAll('#priceOverlay .price-input');
+                return {
+                    min: inputs[0].value || null,
+                    max: inputs[1].value || null
+                };
+            }
+
+            function getSelectedFurniture() {
+                const furniture = [];
+                document.querySelectorAll('#furnitureOverlay .checkbox.checked').forEach(checkbox => {
+                    furniture.push(checkbox.nextElementSibling.textContent);
+                });
+                return furniture;
+            }
+
+            // Обновление главной кнопки
+            function updateMainButton() {
+                const hasFilters = 
+                    getSelectedDistricts().length > 0 ||
+                    getSelectedRooms().length > 0 ||
+                    getPriceRange().min !== null ||
+                    getPriceRange().max !== null ||
+                    getSelectedFurniture().length > 0;
+
+                if (hasFilters) {
+                    tg.MainButton.setText('ПОКАЗАТИ РЕЗУЛЬТАТИ');
+                    tg.MainButton.show();
+                } else {
+                    tg.MainButton.setText('ОБЕРІТЬ ФІЛЬТРИ');
+                }
+            }
+        </script>
+    </body>
 </html>
